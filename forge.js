@@ -5,6 +5,10 @@ const exec2 = promisify(exec);
 const ONE_DAY = 1000 * 60 * 60 * 24;
 const today = new Date();
 
+function formCommit(message, day) {
+  return `GIT_COMMITTER_DATE="${day}" git commit -m "${message}" --date "${day}"`;
+}
+
 class Runner {
   constructor() {
     this.messageStack = [];
@@ -24,6 +28,10 @@ class Runner {
     this.buildStack(shas.length);    
   }
 
+  formDay(after) {
+    return new Date(+this.beginning + ONE_DAY * after).toUTCString();
+  }
+
   /**
    * For each given sha, reset all the way back to the beginning, storing everything
    * in git's stash stack
@@ -34,16 +42,22 @@ class Runner {
     const lines = stdout.split('\n');
     const message = lines.slice(0, lines.length - 2).join('\n');
 
-    exec('git reset --soft HEAD~', () => {
-      exec('git stash', () => {
-        if(idx > 1) {
-          this.messageStack.push(message);
-          this.buildStack(idx - 1);
-        } else {
-          this.rebuildStack(idx);
-        }
-      });
-    });
+    // We have reached the first commit, which is a special case beacuse we
+    // cannot git reset from here.
+    if (idx == 1) {
+      await exec2('git update-ref -d HEAD');
+      const day = this.formDay(0);
+      const commit = formCommit(message, day);
+
+      await exec2(commit);
+      this.rebuildStack(idx);
+    } else {
+      await exec2('git reset --soft HEAD~');
+      await exec2('git stash');
+
+      this.messageStack.push(message);
+      await this.buildStack(idx - 1);
+    }
   }
 
   /**
@@ -52,9 +66,9 @@ class Runner {
    */
   rebuildStack(size) {
     exec('git stash pop', () => {
-      const day = new Date(+this.beginning + ONE_DAY * size).toUTCString();
+      const day = this.formDay(size);
       const message = this.messageStack.pop();
-      const commit = `GIT_COMMITTER_DATE="${day}" git commit -m "${message}" --date "${day}"`;
+      const commit = formCommit(message, day);
 
       exec(commit, () => {
         exec('git stash list | wc -l', (err, stdout) => {
