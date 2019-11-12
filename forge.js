@@ -15,22 +15,20 @@ class Runner {
   }
 
   start() {
-    // gather list of commmits
-    exec('git log | grep commit', (error, stdout, stderr) => {
+    exec('git log --oneline', (error, stdout, stderr) => {
       const shas = stdout
         .split('\n')
         .map(line => line.replace(/commit /, ''))
         .filter(line => line.length > 0);
-    
-      // send to be reset
-      this.buildStack(shas.length)
+
+      this.buildStack(shas.length);
     });
   }
 
   /**
    * For each given sha, reset all the way back to the beginning, storing everything
    * in git's stash stack
-   * @param {Number} idx - which text file we're reverting 
+   * @param {Number} idx - which text file we're reverting
    */
   buildStack(idx) {
     exec('git log --oneline -1 --pretty=%B', (err, stdout) => {
@@ -43,14 +41,18 @@ class Runner {
             this.messageStack.push(message);
             this.buildStack(idx - 1);
           } else {
-            this.rebuildStack();
-          }        
+            this.rebuildStack(idx);
+          }
         });
       });
     });
   }
 
-  rebuildStack(size = 1) {
+  /**
+   * Using the built up git stash, rebuild every commit, but with a new date
+   * @param  {Number} size How many commits we have built so far
+   */
+  rebuildStack(size) {
     exec('git stash pop', () => {
       const day = new Date(+this.beginning + ONE_DAY * size).toUTCString();
       const message = this.messageStack.pop();
