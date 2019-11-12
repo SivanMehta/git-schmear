@@ -5,13 +5,7 @@ const today = new Date();
 
 class Runner {
   constructor() {
-    this.init();
     this.messageStack = [];
-  }
-
-  init() {
-    this.days = 100;
-    this.beginning = new Date(+today - ONE_DAY * this.days);
   }
 
   start() {
@@ -20,6 +14,9 @@ class Runner {
         .split('\n')
         .map(line => line.replace(/commit /, ''))
         .filter(line => line.length > 0);
+
+      this.days = shas.length;
+      this.beginning = new Date(+today - ONE_DAY * this.days);
 
       this.buildStack(shas.length);
     });
