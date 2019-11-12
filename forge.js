@@ -6,6 +6,7 @@ const today = new Date();
 class Runner {
   constructor() {
     this.init();
+    this.messageStack = [];
   }
 
   init() {
@@ -32,27 +33,33 @@ class Runner {
    * @param {Number} idx - which text file we're reverting 
    */
   buildStack(idx) {
-    exec('git reset --soft HEAD~', () => {
-      exec('git stash', () => {
-        if(idx > 1) {
-          this.buildStack(idx - 1);
-        } else {
-          this.rebuildStack();
-        }        
+    exec('git log --oneline -1 --pretty=%B', (err, stdout) => {
+      const lines = stdout.split('\n');
+      const message = lines.slice(0, lines.length - 2).join('\n');
+
+      exec('git reset --soft HEAD~', () => {
+        exec('git stash', () => {
+          if(idx > 1) {
+            this.messageStack.push(message);
+            this.buildStack(idx - 1);
+          } else {
+            this.rebuildStack();
+          }        
+        });
       });
     });
   }
 
   rebuildStack(size = 1) {
-    // get the commit log before stashing
-    // git log -1 --pretty=%B
     exec('git stash pop', () => {
       const day = new Date(+this.beginning + ONE_DAY * size).toUTCString();
-      const commit = `GIT_COMMITTER_DATE="${day}" git commit -m "add data/${size}.txt" --no-edit --date "${day}"`
+      const message = this.messageStack.pop();
+      const commit = `GIT_COMMITTER_DATE="${day}" git commit -m "${message}" --date "${day}"`;
+
       exec(commit, () => {
         exec('git stash list | wc -l', (err, stdout) => {
           const completed = this.days - parseInt(stdout.match(/[0-9]+/)[0]);
-          if(completed < this.days) {
+          if(this.messageStack.length > 0) {
             this.rebuildStack(completed + 1);
           }
         });
