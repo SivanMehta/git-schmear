@@ -18,6 +18,7 @@ repo for an example of a repo that has been `git-schmeared`.
 
 ## TODO
 
+- ~~literally any testing~~
 - Variable intervals of schmear, as opposed to 1 day intervals.
 - Preserving `git` authorship, which is currently blown away.
 - Take start time as a CLI parameter and distribute commits from then until now.
