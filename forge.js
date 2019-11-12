@@ -36,7 +36,7 @@ class Runner {
     this.days = shas.length;
     this.beginning = new Date(+today - ONE_DAY * this.days);
 
-    this.buildStack(shas.length);
+    await this.buildStack(shas.length);
   }
 
   /**
@@ -70,7 +70,7 @@ class Runner {
       const commit = formCommit(message, day);
 
       await exec(commit);
-      await this.rebuildStack(idx);
+      await this.rebuildRepo(idx);
     } else {
       await exec('git reset --soft HEAD~');
       await exec('git stash');
@@ -86,7 +86,7 @@ class Runner {
    * @param  {Number} size - how many commits we have built so far
    * @async
    */
-  async rebuildStack(size) {
+  async rebuildRepo(size) {
     await exec('git stash pop');
 
     const day = this.formDay(size);
@@ -97,10 +97,12 @@ class Runner {
     const { stdout } = await exec('git stash list | wc -l');
     const completed = this.days - parseInt(stdout.match(/[0-9]+/)[0]);
     if(this.messageStack.length > 0) {
-      await this.rebuildStack(completed + 1);
+      await this.rebuildRepo(completed + 1);
     }
   }
 }
 
-const runner = new Runner();
-runner.start();
+(async function () {
+  const runner = new Runner();
+  await runner.start();
+})();
