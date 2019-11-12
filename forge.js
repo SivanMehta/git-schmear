@@ -4,6 +4,14 @@ const exec = promisify(require('child_process').exec);
 const ONE_DAY = 1000 * 60 * 60 * 24;
 const today = new Date();
 
+/**
+ * Form a git commit message given an actual message and a date on which we're
+ * pretending the commit happened.
+ *
+ * @param  {String} message - String of what the commit originally was
+ * @param  {String} day - When the commit "happened"
+ * @return {String} formatted `git commit` command
+ */
 function formCommit(message, day) {
   return `GIT_COMMITTER_DATE="${day}" git commit -m "${message}" --date "${day}"`;
 }
@@ -13,6 +21,10 @@ class Runner {
     this.messageStack = [];
   }
 
+  /**
+   * Actually run the forgery.
+   * @async
+   */
   async start() {
     const { stdout } = await exec('git log --oneline');
 
@@ -24,25 +36,34 @@ class Runner {
     this.days = shas.length;
     this.beginning = new Date(+today - ONE_DAY * this.days);
 
-    this.buildStack(shas.length);    
+    this.buildStack(shas.length);
   }
 
+  /**
+   * Form a `git commit` compatible date string that represents the given number
+   * of days after we started.
+   *
+   * @param  {Number} after - how many days after the start
+   * @returns {String} date string
+   * @async
+   */
   formDay(after) {
     return new Date(+this.beginning + ONE_DAY * after).toUTCString();
   }
 
   /**
-   * For each given sha, reset all the way back to the beginning, storing everything
-   * in git's stash stack
-   * @param {Number} idx - which text file we're reverting
+   * For each given sha, reset all the way back to the beginning, storing
+   * everything in git's stash.
+   *
+   * @param {Number} idx - index in the commit stack
+   * @async
    */
   async buildStack(idx) {
     const { stdout } = await exec('git log --oneline -1 --pretty=%B');
     const lines = stdout.split('\n');
     const message = lines.slice(0, lines.length - 2).join('\n');
 
-    // We have reached the first commit, which is a special case beacuse we
-    // cannot git reset from here.
+    // The first commit is a special case because we cannot `git reset`.
     if (idx == 1) {
       await exec('git update-ref -d HEAD');
       const day = this.formDay(0);
@@ -60,8 +81,10 @@ class Runner {
   }
 
   /**
-   * Using the built up git stash, rebuild every commit, but with a new date
-   * @param  {Number} size How many commits we have built so far
+   * Using the built up git stash, rebuild every commit, but with a new dates 😈.
+   *
+   * @param  {Number} size - how many commits we have built so far
+   * @async
    */
   async rebuildStack(size) {
     await exec('git stash pop');

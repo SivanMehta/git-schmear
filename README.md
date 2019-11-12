@@ -20,5 +20,7 @@ repo for an example of a repo that has been `git-schmeared`.
 
 ## TODO
 
+- Working on something other than `master`
+- preserving `git` authorship, which is currently blown away
 - evenly distributing commits over a given time frame.
 - take start as a CLI flag and evenly distribute commits from then till now
