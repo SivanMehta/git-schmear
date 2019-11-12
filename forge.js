@@ -29,20 +29,19 @@ class Runner {
    * in git's stash stack
    * @param {Number} idx - which text file we're reverting
    */
-  buildStack(idx) {
-    exec('git log --oneline -1 --pretty=%B', (err, stdout) => {
-      const lines = stdout.split('\n');
-      const message = lines.slice(0, lines.length - 2).join('\n');
+  async buildStack(idx) {
+    const { stdout } = await exec2('git log --oneline -1 --pretty=%B');
+    const lines = stdout.split('\n');
+    const message = lines.slice(0, lines.length - 2).join('\n');
 
-      exec('git reset --soft HEAD~', () => {
-        exec('git stash', () => {
-          if(idx > 1) {
-            this.messageStack.push(message);
-            this.buildStack(idx - 1);
-          } else {
-            this.rebuildStack(idx);
-          }
-        });
+    exec('git reset --soft HEAD~', () => {
+      exec('git stash', () => {
+        if(idx > 1) {
+          this.messageStack.push(message);
+          this.buildStack(idx - 1);
+        } else {
+          this.rebuildStack(idx);
+        }
       });
     });
   }
