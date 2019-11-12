@@ -1,4 +1,6 @@
-const { exec } = require('child_process');
+let { exec } = require('child_process');
+const { promisify } = require('util');
+const exec2 = promisify(exec);
 
 const ONE_DAY = 1000 * 60 * 60 * 24;
 const today = new Date();
@@ -8,18 +10,18 @@ class Runner {
     this.messageStack = [];
   }
 
-  start() {
-    exec('git log --oneline', (error, stdout, stderr) => {
-      const shas = stdout
-        .split('\n')
-        .map(line => line.replace(/commit /, ''))
-        .filter(line => line.length > 0);
+  async start() {
+    const { stdout } = await exec2('git log --oneline');
 
-      this.days = shas.length;
-      this.beginning = new Date(+today - ONE_DAY * this.days);
+    const shas = stdout
+      .split('\n')
+      .map(line => line.replace(/commit /, ''))
+      .filter(line => line.length > 0);
 
-      this.buildStack(shas.length);
-    });
+    this.days = shas.length;
+    this.beginning = new Date(+today - ONE_DAY * this.days);
+
+    this.buildStack(shas.length);    
   }
 
   /**
