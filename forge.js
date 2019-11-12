@@ -50,7 +50,7 @@ class Runner {
       const commit = formCommit(message, day);
 
       await exec2(commit);
-      this.rebuildStack(idx);
+      await this.rebuildStack(idx);
     } else {
       await exec2('git reset --soft HEAD~');
       await exec2('git stash');
@@ -64,21 +64,19 @@ class Runner {
    * Using the built up git stash, rebuild every commit, but with a new date
    * @param  {Number} size How many commits we have built so far
    */
-  rebuildStack(size) {
-    exec('git stash pop', () => {
-      const day = this.formDay(size);
-      const message = this.messageStack.pop();
-      const commit = formCommit(message, day);
+  async rebuildStack(size) {
+    await exec2('git stash pop');
 
-      exec(commit, () => {
-        exec('git stash list | wc -l', (err, stdout) => {
-          const completed = this.days - parseInt(stdout.match(/[0-9]+/)[0]);
-          if(this.messageStack.length > 0) {
-            this.rebuildStack(completed + 1);
-          }
-        });
-      });
-    });
+    const day = this.formDay(size);
+    const message = this.messageStack.pop();
+    const commit = formCommit(message, day);
+    await exec2(commit);
+
+    const { stdout } = await exec2('git stash list | wc -l');
+    const completed = this.days - parseInt(stdout.match(/[0-9]+/)[0]);
+    if(this.messageStack.length > 0) {
+      await this.rebuildStack(completed + 1);
+    }
   }
 }
 
