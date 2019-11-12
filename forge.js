@@ -94,9 +94,9 @@ class Runner {
     const commit = formCommit(message, day);
     await exec(commit);
 
-    const { stdout } = await exec('git stash list | wc -l');
-    const completed = this.days - parseInt(stdout.match(/[0-9]+/)[0]);
     if(this.messageStack.length > 0) {
+      const { stdout } = await exec('git stash list | wc -l');
+      const completed = this.days - parseInt(stdout.match(/[0-9]+/)[0]);
       await this.rebuildRepo(completed + 1);
     }
   }
