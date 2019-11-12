@@ -1,6 +1,5 @@
-let { exec } = require('child_process');
 const { promisify } = require('util');
-const exec2 = promisify(exec);
+const exec = promisify(require('child_process').exec);
 
 const ONE_DAY = 1000 * 60 * 60 * 24;
 const today = new Date();
@@ -15,7 +14,7 @@ class Runner {
   }
 
   async start() {
-    const { stdout } = await exec2('git log --oneline');
+    const { stdout } = await exec('git log --oneline');
 
     const shas = stdout
       .split('\n')
@@ -38,22 +37,22 @@ class Runner {
    * @param {Number} idx - which text file we're reverting
    */
   async buildStack(idx) {
-    const { stdout } = await exec2('git log --oneline -1 --pretty=%B');
+    const { stdout } = await exec('git log --oneline -1 --pretty=%B');
     const lines = stdout.split('\n');
     const message = lines.slice(0, lines.length - 2).join('\n');
 
     // We have reached the first commit, which is a special case beacuse we
     // cannot git reset from here.
     if (idx == 1) {
-      await exec2('git update-ref -d HEAD');
+      await exec('git update-ref -d HEAD');
       const day = this.formDay(0);
       const commit = formCommit(message, day);
 
-      await exec2(commit);
+      await exec(commit);
       await this.rebuildStack(idx);
     } else {
-      await exec2('git reset --soft HEAD~');
-      await exec2('git stash');
+      await exec('git reset --soft HEAD~');
+      await exec('git stash');
 
       this.messageStack.push(message);
       await this.buildStack(idx - 1);
@@ -65,14 +64,14 @@ class Runner {
    * @param  {Number} size How many commits we have built so far
    */
   async rebuildStack(size) {
-    await exec2('git stash pop');
+    await exec('git stash pop');
 
     const day = this.formDay(size);
     const message = this.messageStack.pop();
     const commit = formCommit(message, day);
-    await exec2(commit);
+    await exec(commit);
 
-    const { stdout } = await exec2('git stash list | wc -l');
+    const { stdout } = await exec('git stash list | wc -l');
     const completed = this.days - parseInt(stdout.match(/[0-9]+/)[0]);
     if(this.messageStack.length > 0) {
       await this.rebuildStack(completed + 1);
