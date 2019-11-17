@@ -9,6 +9,12 @@
   "bin": {
     "schmear": "./schmear.js"
   },
+  "keywords": [
+    "git",
+    "schmear",
+    "spoof",
+    "time-travel"
+  ],
   "devDependencies": {
     "eslint": "^6.3.0",
     "eslint-config-godaddy": "^4.0.0",
