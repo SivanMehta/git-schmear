@@ -7,9 +7,7 @@ minute.
 ## Running yourself
 
 ```sh
-cd /repo/you/want/to/spoof/
-cp /path/to/this/repo/forge.js .
-node forge.js
+npm install -g git-schmear
 ```
 
 If you want to spoof a fresh repo, copy over `spoof.sh` to get yourself some
