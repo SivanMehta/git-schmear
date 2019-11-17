@@ -16,9 +16,14 @@ If you want to spoof a fresh repo, copy over `spoof.sh` to get yourself some
 freshly minted commits. You can see [this](schmeared)
 repo for an example of a repo that has been `git-schmeared`.
 
+## Testing ![](https://travis-ci.com/SivanMehta/git-schmear.svg?branch=master)
+
+```
+npm test
+```
+
 ## TODO
 
-- ~~literally any testing~~
 - Variable intervals of schmear, as opposed to 1 day intervals.
 - Preserving `git` authorship, which is currently blown away.
 - Take start time as a CLI parameter and distribute commits from then until now.
