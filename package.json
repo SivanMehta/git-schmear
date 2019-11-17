@@ -1,0 +1,15 @@
+{
+  "name": "git-schmear",
+  "version": "0.0.0",
+  "scripts": {
+    "test": "npm run test:unit && npm run test:lint",
+    "test:unit": "mocha test/*.js",
+    "test:lint": "echo looks good"
+  },
+  "bin": {
+    "schmear": "./forge.js"
+  },
+  "devDependencies": {
+    "mocha": "^6.2.2"
+  }
+}
