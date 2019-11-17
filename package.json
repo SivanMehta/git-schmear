@@ -7,9 +7,12 @@
     "test:lint": "echo looks good"
   },
   "bin": {
-    "schmear": "./forge.js"
+    "schmear": "./schmear.js"
   },
   "devDependencies": {
-    "mocha": "^6.2.2"
-  }
+    "mocha": "^6.2.2",
+    "proxyquire": "^2.1.3",
+    "sinon": "^7.5.0"
+  },
+  "main": "schmear.js"
 }

@@ -104,7 +104,10 @@ class Runner {
   }
 }
 
-(async function () {
+async function run () {
   const runner = new Runner();
   await runner.start();
-})();
+}
+
+if(!module.parent) run();
+module.exports = Runner;
