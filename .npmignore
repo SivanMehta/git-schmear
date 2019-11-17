@@ -3,3 +3,4 @@ package-lock.json
 spoof.sh
 LICENSE
 .travis.yml
+test/
