@@ -13,7 +13,7 @@ node forge.js
 ```
 
 If you want to spoof a fresh repo, copy over `spoof.sh` to get yourself some
-freshly minted commits. You can see [this](schmeared)
+freshly minted commits. You can see [this][schmeared]
 repo for an example of a repo that has been `git-schmeared`.
 
 ## TODO
