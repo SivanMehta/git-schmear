@@ -1,3 +1,5 @@
+#!/usr/bin/env/node
+
 const { promisify } = require('util');
 const exec = promisify(require('child_process').exec);
 
@@ -10,7 +12,7 @@ const today = new Date();
  *
  * @param  {String} message - String of what the commit originally was
  * @param  {String} day - When the commit "happened"
- * @return {String} formatted `git commit` command
+ * @returns {String} formatted `git commit` command
  */
 function formCommit(message, day) {
   return `GIT_COMMITTER_DATE="${day}" git commit -m "${message}" --date "${day}"`;
@@ -64,7 +66,7 @@ class Runner {
     const message = lines.slice(0, lines.length - 2).join('\n');
 
     // The first commit is a special case because we cannot `git reset`.
-    if (idx == 1) {
+    if (idx === 1) {
       await exec('git update-ref -d HEAD');
       const day = this.formDay(0);
       const commit = formCommit(message, day);
@@ -94,15 +96,18 @@ class Runner {
     const commit = formCommit(message, day);
     await exec(commit);
 
-    if(this.messageStack.length > 0) {
+    if (this.messageStack.length > 0) {
       const { stdout } = await exec('git stash list | wc -l');
-      const completed = this.days - parseInt(stdout.match(/[0-9]+/)[0]);
+      const completed = this.days - parseInt(stdout.match(/[0-9]+/)[0], 10);
       await this.rebuildRepo(completed + 1);
     }
   }
 }
 
-(async function () {
+async function run() {
   const runner = new Runner();
   await runner.start();
-})();
+}
+
+if (!module.parent) run();
+module.exports = Runner;
